@@ -29,6 +29,7 @@ class PkgrepoTest(ModuleCase, SaltReturnAssertsMixin):
     '''
     pkgrepo state tests
     '''
+
     @requires_system_grains
     def test_pkgrepo_01_managed(self, grains):
         '''
@@ -263,3 +264,54 @@ class PkgrepoTest(ModuleCase, SaltReturnAssertsMixin):
                 os.remove(fn_)
             except OSError:
                 pass
+
+    @requires_system_grains
+    def test_pkgrepo_05_with_key_url(self, grains):
+        os_family = grains['os_family'].lower()
+
+        if os_family in ('redhat',):
+            self.skipTest('RedHat test case needed')
+        elif os_family in ('debian',):
+            kwargs = {
+                'humanname': 'examplerepo',
+                'gpgcheck': 1,
+                # These will be mocked
+                'name': 'deb http://exmaple repo stretch main',
+                #'key_url': 'http://dev/5555/keys/test.gpg.key',
+            }
+        else:
+            self.skipTest("No test case for os_family '{0}'".format(os_family))
+
+        try:
+            # Run the state to add the repo
+            ret = self.run_state('pkgrepo.managed', **kwargs)
+            self.assertSaltTrueReturn(ret)
+
+            # Run again with a new gpg key url
+            kwargs['comments'].append('This is another comment')
+            ret = self.run_state('pkgrepo.managed', **kwargs)
+            self.assertSaltTrueReturn(ret)
+            ret = ret[next(iter(ret))]
+            self.assertEqual(
+                ret['changes'],
+                {
+                    'comments': {
+                        'old': ['This is a comment'],
+                        'new': ['This is a comment',
+                                'This is another comment']
+                    }
+                }
+            )
+
+            # Run a third time, no changes should be made
+            ret = self.run_state('pkgrepo.managed', **kwargs)
+            self.assertSaltTrueReturn(ret)
+            ret = ret[next(iter(ret))]
+            self.assertFalse(ret['changes'])
+            self.assertEqual(
+                ret['comment'],
+                "Package repo '{0}' already configured".format(kwargs['name'])
+            )
+        finally:
+            # Clean up
+            self.run_state('pkgrepo.absent', name=kwargs['name'])

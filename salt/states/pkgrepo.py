@@ -416,7 +416,10 @@ def managed(name, ppa=None, **kwargs):
         #22412: Remove file attribute in case same repo is set up multiple times but with different files
         pre.pop('file', None)
         sanitizedkwargs.pop('file', None)
+        print(sanitizedkwargs)
         for kwarg in sanitizedkwargs:
+            if kwarg == 'key_url':
+                print('We should really be checking the fingerprints')
             if kwarg not in pre:
                 if kwarg == 'enabled':
                     # On a RedHat-based OS, 'enabled' is assumed to be true if
@@ -469,10 +472,21 @@ def managed(name, ppa=None, **kwargs):
                     if six.text_type(sanitizedkwargs[kwarg]) != six.text_type(pre[kwarg]):
                         break
         else:
-            ret['result'] = True
-            ret['comment'] = ('Package repo \'{0}\' already configured'
-                              .format(name))
-            return ret
+            # TODO: Check key_url here
+            # If we got a key_url  then check if it's fingerprint is different from the local one
+            #
+            pass #???? How should this block look? I don't know but this is ugly and should be improved!
+            if kwargs.get('key_url'):
+                pass
+            key_exists = False
+            if not key_exists:
+                ret['changes']['key_url'] = 'repo gpg key fingerprint changed from X to Y' 
+            else:
+                print('We got here, but we should be somewhere else')
+                ret['result'] = True
+                ret['comment'] = ('package repo \'{0}\' already configured'
+                                  .format(name))
+                return ret
 
     if __opts__['test']:
         ret['comment'] = (
@@ -496,10 +510,7 @@ def managed(name, ppa=None, **kwargs):
             pass
 
     try:
-        if __grains__['os_family'] == 'Debian':
-            __salt__['pkg.mod_repo'](repo, saltenv=__env__, **kwargs)
-        else:
-            __salt__['pkg.mod_repo'](repo, **kwargs)
+        __salt__['pkg.mod_repo'](repo, **kwargs)
     except Exception as exc:
         # This is another way to pass information back from the mod_repo
         # function.
