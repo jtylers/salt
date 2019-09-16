@@ -13,12 +13,22 @@ from tests.integration.cloud.helpers.cloud_test_base import CloudTest
 import salt.cloud
 
 
-class CloudClientTestCase(CloudTest):
+class CloudClientTest(CloudTest):
     '''
     Integration tests for the CloudClient class. Uses DigitalOcean as a salt-cloud provider.
     '''
     PROVIDER = 'digitalocean'
     REQUIRED_PROVIDER_CONFIG_ITEMS = ('personal_access_token', 'ssh_key_file', 'ssh_key_name')
+    IMAGE_NAME = '14.04.5 x64'
+
+    def setUp(self):
+        super(CloudClientTest, self).setUp()
+
+        images = self.run_cloud('--list-images {0}'.format(self.profile_str))
+
+        if self.IMAGE_NAME not in [i.strip(': ') for i in images]:
+            self.skipTest('Image \'{1}\' was not found in image search.  Is the {0} provider '
+                          'configured correctly for this test?'.format(self.PROVIDER, self.IMAGE_NAME))
 
     def test_cloud_client_create_and_delete(self):
         '''
@@ -34,25 +44,13 @@ class CloudClientTestCase(CloudTest):
 
         # Create the VM using salt.cloud.CloudClient.create() instead of calling salt-cloud
         ret_val = cloud_client.create(
-            provider=self.PROVIDER,
+            provider=self.profile_str,
             names=[self.instance_name],
-            pillars={
-                'profiles': {
-                    self.profile_str: {
-                        'provider': self.PROVIDER,
-                    }
-                },
-                'providers': {
-                    self.PROVIDER: {
-                        'driver': self.PROVIDER,
-                        'profiles': self.provider_config,
-
-                    }
-                },
-            },
-            image='14.04.5 x64',
+            image=self.IMAGE_NAME,
             location='sfo1', size='512mb', vm_size='512mb'
         )
+
+        self.assertTrue(ret_val, 'Error in cloud client creation, no return value from create')
 
         # Check that the VM was created correctly
         self.assertInstanceExists(ret_val)
