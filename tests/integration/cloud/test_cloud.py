@@ -19,6 +19,7 @@ class CloudClientTestCase(CloudTest):
     '''
     PROVIDER = 'digitalocean'
     REQUIRED_PROVIDER_CONFIG_ITEMS = ('personal_access_token', 'ssh_key_file', 'ssh_key_name')
+    IMAGE_NAME = '14.04.5 x64'
 
     def test_cloud_client_create_and_delete(self):
         '''
@@ -35,10 +36,9 @@ class CloudClientTestCase(CloudTest):
         # Create the VM using salt.cloud.CloudClient.create() instead of calling salt-cloud
         ret_val = cloud_client.create(
             provider=self.PROVIDER,
-            names=[self.PROVIDER + '-test'],
-            image=self.instance_name,
+            names=[self.instance_name],
+            image=self.IMAGE_NAME,
             location='sfo1', size='512mb', vm_size='512mb'
-
         )
 
         # Check that the VM was created correctly
