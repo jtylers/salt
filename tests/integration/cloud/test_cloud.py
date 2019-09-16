@@ -19,7 +19,6 @@ class CloudClientTestCase(CloudTest):
     '''
     PROVIDER = 'digitalocean'
     REQUIRED_PROVIDER_CONFIG_ITEMS = ('personal_access_token', 'ssh_key_file', 'ssh_key_name')
-    IMAGE_NAME = '14.04.5 x64'
 
     def test_cloud_client_create_and_delete(self):
         '''
@@ -37,7 +36,21 @@ class CloudClientTestCase(CloudTest):
         ret_val = cloud_client.create(
             provider=self.PROVIDER,
             names=[self.instance_name],
-            image=self.IMAGE_NAME,
+            pillars={
+                'profiles': {
+                    self.profile_str: {
+                        'provider': self.PROVIDER,
+                    }
+                },
+                'providers': {
+                    self.PROVIDER: {
+                        'driver': self.PROVIDER,
+                        'profiles': self.provider_config,
+
+                    }
+                },
+            },
+            image='14.04.5 x64',
             location='sfo1', size='512mb', vm_size='512mb'
         )
 
