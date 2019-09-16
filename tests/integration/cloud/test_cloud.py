@@ -22,22 +22,6 @@ class CloudClientTestCase(CloudTest):
     PROVIDER = 'digitalocean'
     REQUIRED_PROVIDER_CONFIG_ITEMS = ('personal_access_token', 'ssh_key_file', 'ssh_key_name')
 
-    @expensiveTest
-    def setUp(self):
-
-        # Use a --list-images salt-cloud call to see if the DigitalOcean provider is
-        # configured correctly before running any tests.
-        images = self.run_cloud('--list-images {0}'.format(self.PROVIDER))
-
-        if self.instance_name not in [i.strip() for i in images]:
-            self.skipTest(
-                'Image \'{0}\' was not found in image search. Is the {1} provider '
-                'configured correctly for this test?'.format(
-                    self.PROVIDER,
-                    self.instance_name
-                )
-            )
-
     def test_cloud_client_create_and_delete(self):
         '''
         Tests that a VM is created successfully when calling salt.cloud.CloudClient.create(),
