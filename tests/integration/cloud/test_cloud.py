@@ -50,7 +50,9 @@ class CloudClientTest(CloudTest):
             provider=self.profile_str,
             names=[self.instance_name],
             image=self.IMAGE_NAME,
-            location='sfo1', size='512mb', vm_size='512mb'
+            location='sfo1',
+            size='512mb',
+            vm_size='512mb'
         )
 
         self.assertTrue(ret_val, 'Error in {} creation, no return value from create()'.format(self.instance_name))
@@ -59,7 +61,7 @@ class CloudClientTest(CloudTest):
         self.assertInstanceExists(ret_val)
 
         # Clean up after ourselves and delete the VM
-        deleted = cloud_client.destroy(names=[self.instance_name])
+        deletion_ret = cloud_client.destroy(names=[self.instance_name])
 
         # Check that the VM was deleted correctly
-        self.assertIn(self.instance_name, deleted)
+        self.assertDestroyInstance(deletion_ret=deletion_ret)

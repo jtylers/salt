@@ -43,8 +43,7 @@ class VMWareTest(CloudTest):
         Tests creating snapshot and creating vm with --no-deploy
         '''
         # create the instance
-        ret_val = self.run_cloud('-p vmware-test {0} --no-deploy'.format(self.instance_name),
-                                 timeout=TIMEOUT)
+        ret_val = self.run_cloud('-p vmware-test {0} --no-deploy'.format(self.instance_name), timeout=TIMEOUT)
 
         # check if instance returned with salt installed
         self.assertInstanceExists(ret_val)
@@ -56,4 +55,4 @@ class VMWareTest(CloudTest):
 
         self.assertIn(s_ret_str, six.text_type(create_snapshot))
 
-        self.assertDestroyInstance()
+        self.assertDestroyInstance(timeout=TIMEOUT)

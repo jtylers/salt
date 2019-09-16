@@ -109,7 +109,7 @@ class EC2Test(CloudTest):
         # check if instance returned with salt installed
         self.assertInstanceExists(ret_val)
 
-        self.assertDestroyInstance()
+        self.assertDestroyInstance(timeout=TIMEOUT)
 
     def test_instance_rename(self):
         '''
@@ -127,7 +127,7 @@ class EC2Test(CloudTest):
         self.assertFalse(self._instance_exists(), 'Instance wasn\'t renamed: |\n{}'.format(rename_result))
         self.assertInstanceExists(instance_name=changed_name)
 
-        self.assertDestroyInstance(changed_name)
+        self.assertDestroyInstance(changed_name, timeout=TIMEOUT)
 
     def test_instance(self):
         '''
