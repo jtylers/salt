@@ -5,9 +5,11 @@ Integration tests for functions located in the salt.cloud.__init__.py file.
 
 # Import Python Libs
 from __future__ import absolute_import, print_function, unicode_literals
+import os
 
 # Import Salt Testing libs
 from tests.integration.cloud.helpers.cloud_test_base import CloudTest
+from tests.support.runtests import RUNTIME_VARS
 
 # Import Salt libs
 import salt.cloud
@@ -40,7 +42,8 @@ class CloudClientTest(CloudTest):
 
         This test was created as a regression check against Issue #41971.
         '''
-        cloud_client = salt.cloud.CloudClient(opts=self.config)
+        config_file = os.path.join(RUNTIME_VARS.TMP_CONF_CLOUD_PROVIDER_INCLUDES, 'digitalocean.conf')
+        cloud_client = salt.cloud.CloudClient(config_file)
 
         # Create the VM using salt.cloud.CloudClient.create() instead of calling salt-cloud
         ret_val = cloud_client.create(
@@ -50,7 +53,7 @@ class CloudClientTest(CloudTest):
             location='sfo1', size='512mb', vm_size='512mb'
         )
 
-        self.assertTrue(ret_val, 'Error in cloud client creation, no return value from create')
+        self.assertTrue(ret_val, 'Error in {} creation, no return value from create()'.format(self.instance_name))
 
         # Check that the VM was created correctly
         self.assertInstanceExists(ret_val)
