@@ -5,6 +5,7 @@ Integration tests for functions located in the salt.cloud.__init__.py file.
 
 # Import Python Libs
 from __future__ import absolute_import, print_function, unicode_literals
+import os
 
 # Import Salt Testing libs
 from tests.integration.cloud.helpers.cloud_test_base import CloudTest
@@ -19,8 +20,7 @@ class CloudClientTestCase(CloudTest):
     Integration tests for the CloudClient class. Uses DigitalOcean as a salt-cloud provider.
     '''
     PROVIDER = 'digitalocean'
-    REQUIRED_PROVIDER_CONFIG_ITEMS = tuple()
-    IMAGE_NAME = '14.04.5 x64'
+    REQUIRED_PROVIDER_CONFIG_ITEMS = ('personal_access_token', 'ssh_key_file', 'ssh_key_name')
 
     @expensiveTest
     def setUp(self):
@@ -29,12 +29,12 @@ class CloudClientTestCase(CloudTest):
         # configured correctly before running any tests.
         images = self.run_cloud('--list-images {0}'.format(self.PROVIDER))
 
-        if self.image_name not in [i.strip() for i in images]:
+        if self.instance_name not in [i.strip() for i in images]:
             self.skipTest(
                 'Image \'{0}\' was not found in image search. Is the {1} provider '
                 'configured correctly for this test?'.format(
                     self.PROVIDER,
-                    self.image_name
+                    self.instance_name
                 )
             )
 
@@ -48,13 +48,18 @@ class CloudClientTestCase(CloudTest):
 
         This test was created as a regression check against Issue #41971.
         '''
-        cloud_client = salt.cloud.CloudClient(self.config_file)
+        config_path = os.path.join(
+            self.config_dir,
+            'cloud.profiles.d',
+            self.PROVIDER + '.conf'
+        )
+        cloud_client = salt.cloud.CloudClient(config_path)
 
         # Create the VM using salt.cloud.CloudClient.create() instead of calling salt-cloud
         ret_val = cloud_client.create(
             provider=self.PROVIDER,
             names=[self.instance_name],
-            image=self.IMAGE_NAME,
+            image=self.instance_name,
             location='sfo1', size='512mb', vm_size='512mb'
         )
 
