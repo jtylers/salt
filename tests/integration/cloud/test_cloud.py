@@ -32,12 +32,7 @@ class CloudClientTestCase(CloudTest):
 
         This test was created as a regression check against Issue #41971.
         '''
-        config_path = os.path.join(
-            self.config_dir,
-            'cloud.profiles.d',
-            self.PROVIDER + '.conf'
-        )
-        cloud_client = salt.cloud.CloudClient(config_path)
+        cloud_client = salt.cloud.CloudClient(opts=self.config)
 
         # Create the VM using salt.cloud.CloudClient.create() instead of calling salt-cloud
         ret_val = cloud_client.create(
