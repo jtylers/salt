@@ -8,7 +8,9 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 # Import Salt Testing Libs
-from tests.integration.cloud.helpers.cloud_test_base import TIMEOUT, CloudTest
+from tests.integration.cloud.helpers.cloud_test_base import CloudTest
+
+TIMEOUT = 800
 
 
 class GCETest(CloudTest):
@@ -28,7 +30,7 @@ class GCETest(CloudTest):
 
         # check if instance returned with salt installed
         self.assertInstanceExists(ret_str)
-        self.assertDestroyInstance()
+        self.assertDestroyInstance(timeout=TIMEOUT)
 
     def test_instance_extra(self):
         '''
@@ -40,4 +42,4 @@ class GCETest(CloudTest):
 
         # check if instance returned with salt installed
         self.assertInstanceExists(ret_str)
-        self.assertDestroyInstance()
+        self.assertDestroyInstance(timeout=TIMEOUT)

@@ -97,9 +97,7 @@ class CloudTest(ShellCase):
 
             log.debug('Instance exists and was created: "{}"'.format(instance_name))
 
-    def assertDestroyInstance(self, instance_name=None, timeout=None):
-        if timeout is None:
-            timeout = TIMEOUT
+    def assertDestroyInstance(self, instance_name=None, timeout=TIMEOUT):
         if not instance_name:
             instance_name = self.instance_name
         log.debug('Deleting instance "{}"'.format(instance_name))
@@ -132,8 +130,11 @@ class CloudTest(ShellCase):
                 log.debug('Instance "{}" still found in query after {} tries: {}'
                           .format(instance_name, tries, query))
                 query = self.query_instances()
+            else:
+                break
         # The last query should have been successful
-        self.assertNotIn(instance_name, self.query_instances())
+        self.assertNotIn(instance_name, query, 'Instance still exists after delete command. '
+                                               'Is the timeout ({}s) long enough?'.format(timeout))
 
     @property
     def instance_name(self):
