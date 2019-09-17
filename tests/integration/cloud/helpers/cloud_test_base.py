@@ -155,7 +155,8 @@ class CloudTest(ShellCase):
     @property
     def providers(self):
         if not hasattr(self, '_providers'):
-            self._providers = [p.strip('-: ') for p in self.run_cloud('--list-providers') if p]
+            self._providers = [p.strip(':- ') for p in self.run_cloud('--list-providers') if p.strip(':- ')]
+            log.debug('Available Providers: {}'.format(self._providers))
         return self._providers
 
     @property
