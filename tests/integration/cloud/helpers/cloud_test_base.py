@@ -21,13 +21,14 @@ from salt.config import cloud_config, cloud_providers_config
 from salt.ext.six.moves import range
 from salt.utils.yaml import safe_load
 
-TIMEOUT = 500
+TIMEOUT = 600
 
 log = logging.getLogger(__name__)
 
 
 class CloudTest(ShellCase):
     PROVIDER = ''
+    PROFILE = PROVIDER + '-test'
     REQUIRED_PROVIDER_CONFIG_ITEMS = tuple()
     TMP_PROVIDER_DIR = os.path.join(RUNTIME_VARS.TMP_CONF_DIR, 'cloud.providers.d')
     __RE_RUN_DELAY = 30
@@ -178,7 +179,18 @@ class CloudTest(ShellCase):
 
     @property
     def profile_str(self):
-        return self.PROVIDER + '-config'
+        if not hasattr(self, '_profile_str'):
+            self._profile_str = self.PROVIDER + '-config'
+            # check if appropriate cloud provider and profile files are present
+            providers = self.run_cloud('--list-providers')
+            log.debug("providers: %s", providers)
+            if self.profile_str not in providers:
+                self.skipTest(
+                    'Configuration file for {0} was not valid. Check {1}.conf files '
+                    'in tests/integration/files/conf/cloud.*.d/ to run these tests.'.format(self.profile_str,
+                                                                                            self.PROVIDER)
+                )
+        return self._profile_str
 
     @expensiveTest
     def setUp(self):
@@ -279,6 +291,5 @@ class CloudTest(ShellCase):
         cls.clean_cloud_dir(cls.TMP_PROVIDER_DIR)
 
         # add the provider config for only the cloud we are testing
-        provider_file = cls.PROVIDER + '.conf'
-        shutil.copyfile(os.path.join(os.path.join(FILES, 'conf', 'cloud.providers.d'), provider_file),
-                        os.path.join(os.path.join(cls.TMP_PROVIDER_DIR, provider_file)))
+        shutil.copyfile(os.path.join(FILES, 'conf', 'cloud.providers.d', cls.PROVIDER + '.conf'),
+                        os.path.join(cls.TMP_PROVIDER_DIR, cls.PROVIDER + '.conf'))

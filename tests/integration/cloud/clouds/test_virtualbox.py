@@ -10,16 +10,8 @@ import socket
 
 # Import Salt Testing Libs
 import tests.integration as integration
+from tests.integration.cloud.helpers.cloud_test_base import CloudTest, TIMEOUT
 from tests.support.unit import TestCase, skipIf
-from tests.integration.cloud.helpers.virtualbox import (VirtualboxTestCase,
-                                                        VirtualboxCloudTestCase,
-                                                        CONFIG_NAME,
-                                                        PROVIDER_NAME,
-                                                        PROFILE_NAME,
-                                                        BASE_BOX_NAME,
-                                                        INSTANCE_NAME,
-                                                        BOOTABLE_BASE_BOX_NAME,
-                                                        DEPLOY_PROFILE_NAME)
 
 # Import Salt Libs
 from salt.ext import six
@@ -42,6 +34,8 @@ from salt.utils.virtualbox import (vb_xpcom_to_attribute_dict,
 log = logging.getLogger(__name__)
 
 # As described in the documentation of list_nodes (this may change with time)
+BASE_BOX_NAME = "__temp_test_vm__"
+BOOTABLE_BASE_BOX_NAME = "SaltMiniBuntuTest"
 MINIMAL_MACHINE_ATTRIBUTES = [
     "id",
     "image",
@@ -52,45 +46,23 @@ MINIMAL_MACHINE_ATTRIBUTES = [
 ]
 
 
-class VirtualboxProviderTest(VirtualboxCloudTestCase):
-    """
+class VirtualboxProviderTest(CloudTest):
+    '''
     Integration tests for the Virtualbox cloud provider using the Virtualbox driver
-    """
-
-    def run_cloud_destroy(self, machine_name):
-        """
-        Calls salt-cloud to destroy a machine and returns the destroyed machine object (should be None)
-        @param machine_name:
-        @type str:
-        @return:
-        @rtype: dict
-        """
-        output = self.run_cloud('-d {0} --assume-yes --log-level=debug'.format(machine_name))
-        return output.get(CONFIG_NAME, {}).get(PROVIDER_NAME, {})
+    '''
 
     def setUp(self):
-        """
+        '''
         Sets up the test requirements
-        """
+        '''
         super(VirtualboxProviderTest, self).setUp()
-
-        # check if appropriate cloud provider and profile files are present
-        profile_str = 'virtualbox-config'
-        providers = self.run_cloud('--list-providers')
-        log.debug("providers: %s", providers)
-
-        if profile_str not in providers:
-            self.skipTest(
-                'Configuration file for {0} was not found. Check {0}.conf files '
-                'in tests/integration/files/conf/cloud.*.d/ to run these tests.'.format(PROVIDER_NAME)
-            )
 
         # check if personal access token, ssh_key_file, and ssh_key_names are present
         config_path = os.path.join(
             integration.FILES,
             'conf',
             'cloud.providers.d',
-            PROVIDER_NAME + '.conf'
+            self.PROVIDER + '.conf'
         )
         log.debug("config_path: %s", config_path)
         providers = cloud_providers_config(config_path)
@@ -99,15 +71,15 @@ class VirtualboxProviderTest(VirtualboxCloudTestCase):
             integration.FILES,
             'conf',
             'cloud.profiles.d',
-            PROVIDER_NAME + '.conf'
+            self.PROVIDER + '.conf'
         )
         profiles = vm_profiles_config(config_path, providers)
-        profile = profiles.get(PROFILE_NAME)
+        profile = profiles.get(self.profile_str)
         if not profile:
             self.skipTest(
                 'Profile {0} was not found. Check {1}.conf files '
-                'in tests/integration/files/conf/cloud.profiles.d/ to run these tests.'.format(PROFILE_NAME,
-                                                                                               PROVIDER_NAME)
+                'in tests/integration/files/conf/cloud.profiles.d/ to run these tests.'.format(self.profile_str,
+                self.PROVIDER)
             )
         base_box_name = profile.get("clonefrom")
 
@@ -115,7 +87,7 @@ class VirtualboxProviderTest(VirtualboxCloudTestCase):
             self.skipTest(
                 'Profile {0} does not have a base box to clone from. Check {1}.conf files '
                 'in tests/integration/files/conf/cloud.profiles.d/ to run these tests.'
-                'And add a "clone_from: {2}" to the profile'.format(PROFILE_NAME, PROVIDER_NAME, BASE_BOX_NAME)
+                'And add a "clone_from: {2}" to the profile'.format(self.profile_str, self.PROVIDER, BASE_BOX_NAME)
             )
 
     @classmethod
@@ -126,17 +98,19 @@ class VirtualboxProviderTest(VirtualboxCloudTestCase):
     def tearDownClass(cls):
         vb_destroy_machine(BASE_BOX_NAME)
 
-    def test_cloud_create(self):
-        """
+    def test_instance(self):
+        '''
         Simply create a machine and make sure it was created
-        """
-        machines = self.run_cloud('-p {0} {1} --log-level=debug'.format(PROFILE_NAME, INSTANCE_NAME))
-        self.assertIn(INSTANCE_NAME, machines.keys())
+        '''
+        ret_val = self.run_cloud('-p {0} {1}'.format(self.profile_str, self.instance_name), timeout=TIMEOUT)
+        self.assertInstanceExists(ret_val)
+
+        self.assertDestroyInstance(timeout=TIMEOUT)
 
     def test_cloud_list(self):
-        """
+        '''
         List all machines in virtualbox and make sure the requested attributes are included
-        """
+        '''
         machines = self.run_cloud_function('list_nodes')
 
         expected_attributes = MINIMAL_MACHINE_ATTRIBUTES
@@ -151,9 +125,9 @@ class VirtualboxProviderTest(VirtualboxCloudTestCase):
         self.assertIn(BASE_BOX_NAME, names)
 
     def test_cloud_list_full(self):
-        """
+        '''
         List all machines and make sure full information in included
-        """
+        '''
         machines = self.run_cloud_function('list_nodes_full')
         expected_minimal_attribute_count = len(MINIMAL_MACHINE_ATTRIBUTES)
 
@@ -165,9 +139,9 @@ class VirtualboxProviderTest(VirtualboxCloudTestCase):
         self.assertIn(BASE_BOX_NAME, names)
 
     def test_cloud_list_select(self):
-        """
+        '''
         List selected attributes of all machines
-        """
+        '''
         machines = self.run_cloud_function('list_nodes_select')
         # TODO find out how to get query.selection from the  "cloud" config
         expected_attributes = ["id"]
@@ -182,17 +156,6 @@ class VirtualboxProviderTest(VirtualboxCloudTestCase):
 
         self.assertIn(BASE_BOX_NAME, names)
 
-    def test_cloud_destroy(self):
-        """
-        Test creating an instance on virtualbox with the virtualbox driver
-        """
-        # check if instance with salt installed returned
-        self.test_cloud_create()
-        ret = self.run_cloud_destroy(INSTANCE_NAME)
-
-        # destroy the instance
-        self.assertIn(INSTANCE_NAME, ret.keys())
-
     def test_function_show_instance(self):
         kw_function_args = {
             "image": BASE_BOX_NAME
@@ -204,28 +167,35 @@ class VirtualboxProviderTest(VirtualboxCloudTestCase):
         self.assertGreaterEqual(len(machine.keys()), expected_minimal_attribute_count)
 
     def tearDown(self):
-        """
+        '''
         Clean up after tests
-        """
-        if vb_machine_exists(INSTANCE_NAME):
-            vb_destroy_machine(INSTANCE_NAME)
+        '''
+        if vb_machine_exists(self.instance_name):
+            vb_destroy_machine(self.instance_name)
+            self.fail('Cleanup should happen in the test, not the TearDown')
+
+        super(VirtualboxProviderTest, self).tearDown()
 
 
 @skipIf(HAS_LIBS and vb_machine_exists(BOOTABLE_BASE_BOX_NAME) is False,
         "Bootable VM '{0}' not found. Cannot run tests.".format(BOOTABLE_BASE_BOX_NAME)
         )
-class VirtualboxProviderHeavyTests(VirtualboxCloudTestCase):
-    """
+class VirtualboxProviderHeavyTests(CloudTest):
+    '''
     Tests that include actually booting a machine and doing operations on it that might be lengthy.
-    """
+    '''
+
+    PROVIDER = 'virtualbox'
+    DEPLOY_PROFILE = PROVIDER + "-deploy-test"
+
     def assertIsIpAddress(self, ip_str):
-        """
+        '''
         Is it either a IPv4 or IPv6 address
 
         @param ip_str:
         @type ip_str: str
         @raise AssertionError
-        """
+        '''
         try:
             socket.inet_aton(ip_str)
         except Exception:
@@ -235,51 +205,26 @@ class VirtualboxProviderHeavyTests(VirtualboxCloudTestCase):
                 self.fail("{0} is not a valid IP address".format(ip_str))
 
     def setUp(self):
-        """
+        '''
         Sets up the test requirements
-        """
-        # check if appropriate cloud provider and profile files are present
-        provider_str = CONFIG_NAME
-        providers = self.run_cloud('--list-providers')
-        log.debug("providers: %s", providers)
-
-        if provider_str not in providers:
-            self.skipTest(
-                'Configuration file for {0} was not found. Check {0}.conf files '
-                'in tests/integration/files/conf/cloud.*.d/ to run these tests.'.format(PROVIDER_NAME)
-            )
-
+        '''
+        super(VirtualboxProviderHeavyTests, self).setUp()
         # check if personal access token, ssh_key_file, and ssh_key_names are present
-        config_path = os.path.join(
-            integration.FILES,
-            'conf',
-            'cloud.providers.d',
-            PROVIDER_NAME + '.conf'
-        )
-        log.debug("config_path: %s", config_path)
-        providers = cloud_providers_config(config_path)
-        log.debug("config: %s", providers)
-        config_path = os.path.join(
-            integration.FILES,
-            'conf',
-            'cloud.profiles.d',
-            PROVIDER_NAME + '.conf'
-        )
-        profiles = vm_profiles_config(config_path, providers)
-        profile = profiles.get(DEPLOY_PROFILE_NAME)
-        if not profile:
+        vm_profiles = vm_profiles_config(os.path.join(self.TMP_PROVIDER_DIR, self.PROVIDER + '.conf'), self.provider_config)
+        deploy_profile = vm_profiles.get(self.DEPLOY_PROFILE)
+        if not deploy_profile:
             self.skipTest(
                 'Profile {0} was not found. Check {1}.conf files '
-                'in tests/integration/files/conf/cloud.profiles.d/ to run these tests.'.format(DEPLOY_PROFILE_NAME,
-                                                                                               PROVIDER_NAME)
+                'in tests/integration/files/conf/cloud.profiles.d/ to run these tests.'.format(self.DEPLOY_PROFILE,
+                                                                                               self.PROVIDER)
             )
-        base_box_name = profile.get("clonefrom")
+        base_box_name = deploy_profile.get("clonefrom")
 
         if base_box_name != BOOTABLE_BASE_BOX_NAME:
             self.skipTest(
                 'Profile {0} does not have a base box to clone from. Check {1}.conf files '
                 'in tests/integration/files/conf/cloud.profiles.d/ to run these tests.'
-                'And add a "clone_from: {2}" to the profile'.format(PROFILE_NAME, PROVIDER_NAME, BOOTABLE_BASE_BOX_NAME)
+                'And add a "clone_from: {2}" to the profile'.format(self.profile_str, self.PROVIDER, BOOTABLE_BASE_BOX_NAME)
             )
 
     def tearDown(self):
@@ -288,17 +233,19 @@ class VirtualboxProviderHeavyTests(VirtualboxCloudTestCase):
         except Exception:
             pass
 
-        if vb_machine_exists(INSTANCE_NAME):
+        if vb_machine_exists(self.instance_name):
             try:
-                vb_stop_vm(INSTANCE_NAME)
-                vb_destroy_machine(INSTANCE_NAME)
+                vb_stop_vm(self.instance_name)
+                vb_destroy_machine(self.instance_name)
             except Exception as e:
                 log.warning("Possibly dirty state after exception", exc_info=True)
 
-    def test_deploy(self):
-        machines = self.run_cloud('-p {0} {1} --log-level=debug'.format(DEPLOY_PROFILE_NAME, INSTANCE_NAME))
-        self.assertIn(INSTANCE_NAME, machines.keys())
-        machine = machines[INSTANCE_NAME]
+        super(VirtualboxProviderHeavyTests, self).tearDown()
+
+    def test_instance(self):
+        ret_val = self.run_cloud('-p {0} {1} --log-level=debug'.format(self.DEPLOY_PROFILE, self.instance_name))
+        self.assertInstanceExists(ret_val)
+        machine = ret_val[self.instance_name]
         self.assertIn("deployed", machine)
         self.assertTrue(machine["deployed"], "Machine wasn't deployed :(")
 
@@ -348,50 +295,47 @@ class BaseVirtualboxTests(TestCase):
         self.assertIsNotNone(vb_get_box())
 
 
-class CreationDestructionVirtualboxTests(VirtualboxTestCase):
-    def setUp(self):
-        super(CreationDestructionVirtualboxTests, self).setUp()
-
-    def test_vm_creation_and_destruction(self):
+class CreationDestructionVirtualboxTests(TestCase):
+    def test_instance(self):
         vm_name = BASE_BOX_NAME
         vb_create_machine(vm_name)
-        self.assertMachineExists(vm_name)
+        self.vbox.findMachine(vm_name)
 
         vb_destroy_machine(vm_name)
-        self.assertMachineDoesNotExist(vm_name)
+        self.assertRaisesRegex(Exception, "Could not find a registered machine", self.vbox.findMachine, vm_name)
 
 
-class CloneVirtualboxTests(VirtualboxTestCase):
+class CloneVirtualboxTests(TestCase):
     def setUp(self):
         self.vbox = vb_get_box()
 
         self.name = "SaltCloudVirtualboxTestVM"
         vb_create_machine(self.name)
-        self.assertMachineExists(self.name)
+        self.vbox.findMachine(self.name)
 
     def tearDown(self):
         vb_destroy_machine(self.name)
-        self.assertMachineDoesNotExist(self.name)
+        self.assertRaisesRegex(Exception, "Could not find a registered machine", self.vbox.findMachine, self.name)
 
-    def test_create_machine(self):
+    def test_instance(self):
         vb_name = "NewTestMachine"
         machine = vb_clone_vm(
             name=vb_name,
             clone_from=self.name
         )
         self.assertEqual(machine.get("name"), vb_name)
-        self.assertMachineExists(vb_name)
+        self.vbox.findMachine(vb_name)
 
         vb_destroy_machine(vb_name)
-        self.assertMachineDoesNotExist(vb_name)
+        self.assertRaisesRegex(Exception, "Could not find a registered machine", self.vbox.findMachine, vb_name)
 
 
 @skipIf(HAS_LIBS and vb_machine_exists(BOOTABLE_BASE_BOX_NAME) is False,
         "Bootable VM '{0}' not found. Cannot run tests.".format(BOOTABLE_BASE_BOX_NAME)
         )
-class BootVirtualboxTests(VirtualboxTestCase):
+class BootVirtualboxTests(TestCase):
     def test_start_stop(self):
-        for i in range(2):
+        for _ in range(2):
             machine = vb_start_vm(BOOTABLE_BASE_BOX_NAME, 20000)
             self.assertEqual(machine_get_machinestate_str(machine), "Running")
 
