@@ -28,7 +28,6 @@ log = logging.getLogger(__name__)
 
 class CloudTest(ShellCase):
     PROVIDER = ''
-    PROFILE = PROVIDER + '-test'
     REQUIRED_PROVIDER_CONFIG_ITEMS = tuple()
     TMP_PROVIDER_DIR = os.path.join(RUNTIME_VARS.TMP_CONF_DIR, 'cloud.providers.d')
     __RE_RUN_DELAY = 30
@@ -137,6 +136,12 @@ class CloudTest(ShellCase):
         # The last query should have been successful
         self.assertNotIn(instance_name, query, 'Instance still exists after delete command. '
                                                'Is the timeout ({}s) long enough?'.format(timeout))
+
+    @property
+    def profile(self):
+        if not hasattr(self, 'PROFILE'):
+            self.PROFILE = self.PROVIDER + '-test'
+        return self.PROFILE
 
     @property
     def instance_name(self):

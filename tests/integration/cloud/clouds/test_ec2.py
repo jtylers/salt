@@ -117,7 +117,7 @@ class EC2Test(CloudTest):
         Tests creating and renaming an instance on EC2 (classic)
         '''
         # create the instance
-        ret_val = self.run_cloud('-p {0} {1} --no-deploy'.format(self.PROFILE, self.instance_name), timeout=TIMEOUT)
+        ret_val = self.run_cloud('-p {0} {1} --no-deploy'.format(self.profile, self.instance_name), timeout=TIMEOUT)
         # check if instance returned
         self.assertInstanceExists(ret_val)
 
@@ -134,7 +134,7 @@ class EC2Test(CloudTest):
         '''
         Tests creating and deleting an instance on EC2 (classic)
         '''
-        self._test_instance(self.PROFILE, debug=False)
+        self._test_instance(self.profile, debug=False)
 
     def test_win2012r2_psexec(self):
         '''

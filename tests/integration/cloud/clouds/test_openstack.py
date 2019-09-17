@@ -183,7 +183,7 @@ class RackspaceTest(CloudTest):
         Test creating an instance on rackspace with the openstack driver
         '''
         # check if instance with salt installed returned
-        ret_val = self.run_cloud('-p {0} {1}'.format(self.PROFILE, self.instance_name), timeout=TIMEOUT)
+        ret_val = self.run_cloud('-p {0} {1}'.format(self.profile, self.instance_name), timeout=TIMEOUT)
         self.assertInstanceExists(ret_val)
 
         self.assertDestroyInstance()

@@ -41,7 +41,7 @@ class OneAndOneTest(CloudTest):
         Test creating an instance on 1and1
         '''
         # check if instance with salt installed returned
-        ret_str = self.run_cloud('-p {0} {1}'.format(self.PROFILE, self.instance_name), timeout=TIMEOUT)
+        ret_str = self.run_cloud('-p {0} {1}'.format(self.profile, self.instance_name), timeout=TIMEOUT)
         self.assertInstanceExists(ret_str)
 
         self.assertDestroyInstance(timeout=TIMEOUT)
