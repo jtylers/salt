@@ -235,7 +235,7 @@ class VirtualboxProviderHeavyTests(CloudTest):
         vb_stop_vm(self.instance_name)
         vb_destroy_machine(self.instance_name)
 
-        self.assertDestroyMachine()
+        self.assertDestroyMachine(timeout=TIMEOUT)
 
     def test_instance(self):
         ret_val = self.run_cloud('-p {0} {1} --log-level=debug'.format(self.DEPLOY_PROFILE, self.instance_name))
@@ -244,7 +244,7 @@ class VirtualboxProviderHeavyTests(CloudTest):
         self.assertIn('deployed', machine)
         self.assertTrue(machine['deployed'], 'Machine wasn\'t deployed :(')
 
-        self.assertDestroyMachine()
+        self.assertDestroyMachine(timeout=TIMEOUT)
 
     def test_start_stop_action(self):
         res = self.run_cloud_action('start', BOOTABLE_BASE_BOX_NAME, timeout=10)
@@ -266,10 +266,10 @@ class VirtualboxProviderHeavyTests(CloudTest):
         state = machine.get('state')
         self.assertEqual(state, expected_state)
 
-        self.assertDestroyMachine()
+        self.assertDestroyMachine(timeout=TIMEOUT)
 
     def test_restart_action(self):
-        self.assertDestroyMachine()
+        self.assertDestroyMachine(timeout=TIMEOUT)
 
     def test_network_addresses(self):
         # Machine is off
@@ -287,7 +287,7 @@ class VirtualboxProviderHeavyTests(CloudTest):
         for ip_address in ip_addresses:
             self.assertIsIpAddress(ip_address)
 
-        self.assertDestroyMachine()
+        self.assertDestroyMachine(timeout=TIMEOUT)
 
 
 @skipIf(not HAS_LIBS, 'The \'vboxapi\' library is not available')

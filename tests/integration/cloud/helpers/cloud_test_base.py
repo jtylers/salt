@@ -155,7 +155,7 @@ class CloudTest(ShellCase):
     @property
     def providers(self):
         if not hasattr(self, '_providers'):
-            self._providers = self.run_cloud('--list-providers')
+            self._providers = [p.strip('-: ') for p in self.run_cloud('--list-providers') if p]
         return self._providers
 
     @property
@@ -186,10 +186,10 @@ class CloudTest(ShellCase):
     def profile_str(self):
         if not hasattr(self, '_profile_str'):
             self._profile_str = self.PROVIDER + '-config'
-            # There should be a single provider in the temporary directory
             try:
-                provider = self.run_cloud('--list-providers').pop(0).strip(': ')
-                self.assertEqual(provider, self._profile_str)
+                # There should be a single provider in the temporary directory,
+                # Otherwise the setUpClass needs to be fixed
+                self.assertEqual(self.providers[0], self._profile_str)
             except IndexError:
                 self.skipTest(
                     'Configuration file \'{0}\' was not found. Check {1}.conf files '
@@ -251,7 +251,7 @@ class CloudTest(ShellCase):
         if self._instance_exists(instance_name):
             for tries in range(3):
                 try:
-                    self.assertDestroyInstance(instance_name)
+                    self.assertDestroyInstance(instance_name, timeout=TIMEOUT)
                     return False, 'The instance "{}" was deleted during the tearDown, not the test.'.format(
                         instance_name)
                 except AssertionError as e:

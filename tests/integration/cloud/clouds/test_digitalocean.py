@@ -149,4 +149,4 @@ class DigitalOceanTest(CloudTest):
         deletion_ret = cloud_client.destroy(names=[self.instance_name])
 
         # Check that the VM was deleted correctly
-        self.assertDestroyInstance(deletion_ret=deletion_ret)
+        self.assertDestroyInstance(deletion_ret=deletion_ret, timeout=TIMEOUT)

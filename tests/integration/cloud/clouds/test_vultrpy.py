@@ -7,6 +7,9 @@ Integration tests for Vultr
 from __future__ import absolute_import, print_function, unicode_literals
 import time
 
+# Import Salt Libs
+import salt.cloud.clouds.vultrpy
+
 # Import Salt Testing Libs
 from tests.integration.cloud.helpers.cloud_test_base import CloudTest
 from tests.support.unit import skipIf
@@ -29,18 +32,32 @@ class VultrTest(CloudTest):
 
         self.assertIn(
             'Debian 8 x64 (jessie)',
-            [i.strip() for i in image_list]
+            [i.strip(': ') for i in image_list]
         )
 
     def test_list_locations(self):
         '''
         Tests the return of running the --list-locations command for Vultr
         '''
-        location_list = self.run_cloud('--list-locations {0}'.format(self.PROVIDER))
-        self.assertIn(
+        locations = {l.strip(':- ') for l in self.run_cloud('--list-locations {0}'.format(self.PROVIDER)) if l}
+        self.assertTrue(locations.issuperset({
+            'Amsterdam',
+            'Atlanta',
+            'Chicago',
+            'Dallas',
+            'Frankfurt',
+            'London'
+            'Los Angeles',
+            'Miami',
             'New Jersey',
-            [i.strip() for i in location_list]
-        )
+            'Paris',
+            'Seattle',
+            'Silicon Valley',
+            'Singapore',
+            'Sydney',
+            'Tokyo',
+            'Toronto',
+        }))
 
     def test_list_sizes(self):
         '''
@@ -48,10 +65,12 @@ class VultrTest(CloudTest):
         '''
         size_list = self.run_cloud('--list-sizes {0}'.format(self.PROVIDER))
         self.assertIn(
-            '32768 MB RAM,4x110 GB SSD,40.00 TB BW',
+            '2048 MB RAM,64 GB SSD,2.00 TB BW',
             [i.strip() for i in size_list]
         )
 
+    @skipIf(not hasattr(salt.cloud.clouds.vultrpy, 'create_key'),
+            'The vultr driver does not define the function "create_key"')
     def test_key_management(self):
         '''
         Test key management

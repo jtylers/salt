@@ -35,11 +35,7 @@ except ImportError:
     HAS_SHADE = False
 
 
-@skipIf(
-    not HAS_KEYSTONE,
-    'Please install keystoneclient and a keystone server before running'
-    'openstack integration tests.'
-)
+@skipIf(not HAS_KEYSTONE, 'Please install keystoneclient and a keystone server before running openstack integration tests.')
 class OpenstackTest(ModuleCase, SaltReturnAssertsMixin):
     '''
     Validate the keystone state
@@ -186,4 +182,4 @@ class RackspaceTest(CloudTest):
         ret_val = self.run_cloud('-p {0} {1}'.format(self.profile, self.instance_name), timeout=TIMEOUT)
         self.assertInstanceExists(ret_val)
 
-        self.assertDestroyInstance()
+        self.assertDestroyInstance(timeout=TIMEOUT)
