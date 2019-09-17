@@ -183,7 +183,7 @@ class CloudTest(ShellCase):
             self._profile_str = self.PROVIDER + '-config'
             # There should be a single provider in the temporary directory
             try:
-                provider = self.run_cloud('--list-providers').pop().strip(': ')
+                provider = self.run_cloud('--list-providers').pop(0).strip(': ')
                 self.assertEqual(provider, self._profile_str)
             except IndexError:
                 self.skipTest(
