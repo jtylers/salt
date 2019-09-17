@@ -181,12 +181,13 @@ class CloudTest(ShellCase):
     def profile_str(self):
         if not hasattr(self, '_profile_str'):
             self._profile_str = self.PROVIDER + '-config'
-            # check if appropriate cloud provider and profile files are present
-            providers = self.run_cloud('--list-providers')
-            log.debug("providers: %s", providers)
-            if self.profile_str not in providers:
+            # There should be a single provider in the temporary directory
+            try:
+                provider = self.run_cloud('--list-providers').pop().strip(': ')
+                self.assertEqual(provider, self._profile_str)
+            except IndexError:
                 self.skipTest(
-                    'Configuration file for {0} was not valid. Check {1}.conf files '
+                    'Configuration file \'{0}\' was not found. Check {1}.conf files '
                     'in tests/integration/files/conf/cloud.*.d/ to run these tests.'.format(self.profile_str,
                                                                                             self.PROVIDER)
                 )
