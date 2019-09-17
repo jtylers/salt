@@ -226,20 +226,16 @@ class VirtualboxProviderHeavyTests(CloudTest):
                 'And add a \'clone_from: {2}\' to the profile'.format(self.profile_str, self.PROVIDER, BOOTABLE_BASE_BOX_NAME)
             )
 
-    def tearDown(self):
+    def assertDestroyMachine(self):
         try:
             vb_stop_vm(BOOTABLE_BASE_BOX_NAME)
         except Exception:
             pass
 
-        if vb_machine_exists(self.instance_name):
-            try:
-                vb_stop_vm(self.instance_name)
-                vb_destroy_machine(self.instance_name)
-            except Exception as e:
-                log.warning('Possibly dirty state after exception', exc_info=True)
+        vb_stop_vm(self.instance_name)
+        vb_destroy_machine(self.instance_name)
 
-        super(VirtualboxProviderHeavyTests, self).tearDown()
+        self.assertDestroyMachine()
 
     def test_instance(self):
         ret_val = self.run_cloud('-p {0} {1} --log-level=debug'.format(self.DEPLOY_PROFILE, self.instance_name))
@@ -247,6 +243,8 @@ class VirtualboxProviderHeavyTests(CloudTest):
         machine = ret_val[self.instance_name]
         self.assertIn('deployed', machine)
         self.assertTrue(machine['deployed'], 'Machine wasn\'t deployed :(')
+
+        self.assertDestroyMachine()
 
     def test_start_stop_action(self):
         res = self.run_cloud_action('start', BOOTABLE_BASE_BOX_NAME, timeout=10)
@@ -268,8 +266,10 @@ class VirtualboxProviderHeavyTests(CloudTest):
         state = machine.get('state')
         self.assertEqual(state, expected_state)
 
+        self.assertDestroyMachine()
+
     def test_restart_action(self):
-        pass
+        self.assertDestroyMachine()
 
     def test_network_addresses(self):
         # Machine is off
@@ -286,6 +286,8 @@ class VirtualboxProviderHeavyTests(CloudTest):
 
         for ip_address in ip_addresses:
             self.assertIsIpAddress(ip_address)
+
+        self.assertDestroyMachine()
 
 
 @skipIf(not HAS_LIBS, 'The \'vboxapi\' library is not available')
