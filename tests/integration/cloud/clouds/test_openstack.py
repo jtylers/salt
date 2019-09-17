@@ -175,6 +175,7 @@ class RackspaceTest(CloudTest):
     Integration tests for the Rackspace cloud provider using the Openstack driver
     '''
     PROVIDER = 'openstack'
+    PROFILE = 'rackspace-test'
     REQUIRED_PROVIDER_CONFIG_ITEMS = ('auth', 'cloud', 'region_name')
 
     def test_instance(self):
@@ -182,7 +183,7 @@ class RackspaceTest(CloudTest):
         Test creating an instance on rackspace with the openstack driver
         '''
         # check if instance with salt installed returned
-        ret_val = self.run_cloud('-p rackspace-test {0}'.format(self.instance_name), timeout=TIMEOUT)
+        ret_val = self.run_cloud('-p {0} {1}'.format(self.PROFILE, self.instance_name), timeout=TIMEOUT)
         self.assertInstanceExists(ret_val)
 
         self.assertDestroyInstance()

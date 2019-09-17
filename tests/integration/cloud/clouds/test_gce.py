@@ -19,6 +19,7 @@ class GCETest(CloudTest):
     '''
     PROVIDER = 'gce'
     REQUIRED_PROVIDER_CONFIG_ITEMS = ('project', 'service_account_email_address', 'service_account_private_key')
+    EXTRA_PROFILE = 'gce-test-extra'
 
     def test_instance(self):
         '''
@@ -26,7 +27,7 @@ class GCETest(CloudTest):
         '''
 
         # create the instance
-        ret_str = self.run_cloud('-p gce-test {0}'.format(self.instance_name), timeout=TIMEOUT)
+        ret_str = self.run_cloud('-p {0} {1}'.format(self.PROFILE, self.instance_name), timeout=TIMEOUT)
 
         # check if instance returned with salt installed
         self.assertInstanceExists(ret_str)
@@ -38,7 +39,7 @@ class GCETest(CloudTest):
         '''
 
         # create the instance
-        ret_str = self.run_cloud('-p gce-test-extra {0}'.format(self.instance_name), timeout=TIMEOUT)
+        ret_str = self.run_cloud('-p {0} {1}'.format(self.EXTRA_PROFILE, self.instance_name), timeout=TIMEOUT)
 
         # check if instance returned with salt installed
         self.assertInstanceExists(ret_str)

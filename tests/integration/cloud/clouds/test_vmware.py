@@ -25,9 +25,9 @@ class VMWareTest(CloudTest):
         Tests creating and deleting an instance on vmware and installing salt
         '''
         # create the instance
-        disk_datastore = self.config['vmware-test']['devices']['disk']['Hard disk 2']['datastore']
+        disk_datastore = self.config[self.PROFILE]['devices']['disk']['Hard disk 2']['datastore']
 
-        ret_val = self.run_cloud('-p vmware-test {0}'.format(self.instance_name), timeout=TIMEOUT)
+        ret_val = self.run_cloud('-p {0} {1}'.format(self.PROFILE, self.instance_name), timeout=TIMEOUT)
         disk_datastore_str = '                [{0}] {1}/Hard disk 2-flat.vmdk'.format(disk_datastore,
                                                                                       self.instance_name)
 
@@ -43,7 +43,7 @@ class VMWareTest(CloudTest):
         Tests creating snapshot and creating vm with --no-deploy
         '''
         # create the instance
-        ret_val = self.run_cloud('-p vmware-test {0} --no-deploy'.format(self.instance_name), timeout=TIMEOUT)
+        ret_val = self.run_cloud('-p {0} {1} --no-deploy'.format(self.PROFILE, self.instance_name), timeout=TIMEOUT)
 
         # check if instance returned with salt installed
         self.assertInstanceExists(ret_val)

@@ -33,6 +33,7 @@ class EC2Test(CloudTest):
     '''
     PROVIDER = 'ec2'
     REQUIRED_PROVIDER_CONFIG_ITEMS = ('id', 'key', 'keyname', 'private_key', 'location')
+    OVERRIDE_PROFILE = 'ec2-win2012r2-test'
 
     @staticmethod
     def __fetch_installer():
@@ -116,7 +117,7 @@ class EC2Test(CloudTest):
         Tests creating and renaming an instance on EC2 (classic)
         '''
         # create the instance
-        ret_val = self.run_cloud('-p ec2-test {0} --no-deploy'.format(self.instance_name), timeout=TIMEOUT)
+        ret_val = self.run_cloud('-p {0} {1} --no-deploy'.format(self.PROFILE, self.instance_name), timeout=TIMEOUT)
         # check if instance returned
         self.assertInstanceExists(ret_val)
 
@@ -133,7 +134,7 @@ class EC2Test(CloudTest):
         '''
         Tests creating and deleting an instance on EC2 (classic)
         '''
-        self._test_instance('ec2-test', debug=False)
+        self._test_instance(self.PROFILE, debug=False)
 
     def test_win2012r2_psexec(self):
         '''
@@ -142,16 +143,15 @@ class EC2Test(CloudTest):
         '''
         # TODO: psexec calls hang and the test fails by timing out. The same
         # same calls succeed when run outside of the test environment.
-        # FIXME? Does this override need to be undone at the end of the test?
         self.override_profile_config(
-            'ec2-win2012r2-test',
+            self.OVERRIDE_PROFILE,
             {
                 'use_winrm': False,
                 'userdata_file': self.copy_file('windows-firewall-winexe.ps1'),
                 'win_installer': self.copy_file(self.installer),
             },
         )
-        self._test_instance('ec2-win2012r2-test', debug=True)
+        self._test_instance(self.OVERRIDE_PROFILE, debug=True)
 
     @skipIf(not HAS_WINRM, 'Skip when winrm dependencies are missing')
     def test_win2012r2_winrm(self):
@@ -160,7 +160,7 @@ class EC2Test(CloudTest):
         winrm (classic)
         '''
         self.override_profile_config(
-            'ec2-win2012r2-test',
+            self.OVERRIDE_PROFILE,
             {
                 'userdata_file': self.copy_file('windows-firewall.ps1'),
                 'win_installer': self.copy_file(self.installer),
@@ -169,7 +169,7 @@ class EC2Test(CloudTest):
             }
 
         )
-        self._test_instance('ec2-win2012r2-test', debug=True)
+        self._test_instance(self.OVERRIDE_PROFILE, debug=True)
 
     def test_win2016_psexec(self):
         '''
@@ -179,14 +179,14 @@ class EC2Test(CloudTest):
         # TODO: winexe calls hang and the test fails by timing out. The
         # same calls succeed when run outside of the test environment.
         self.override_profile_config(
-            'ec2-win2016-test',
+            self.OVERRIDE_PROFILE,
             {
                 'use_winrm': False,
                 'userdata_file': self.copy_file('windows-firewall-winexe.ps1'),
                 'win_installer': self.copy_file(self.installer),
             },
         )
-        self._test_instance('ec2-win2016-test', debug=True)
+        self._test_instance(self.OVERRIDE_PROFILE, debug=True)
 
     @skipIf(not HAS_WINRM, 'Skip when winrm dependencies are missing')
     def test_win2016_winrm(self):
@@ -195,7 +195,7 @@ class EC2Test(CloudTest):
         (classic)
         '''
         self.override_profile_config(
-            'ec2-win2016-test',
+            self.OVERRIDE_PROFILE,
             {
                 'userdata_file': self.copy_file('windows-firewall.ps1'),
                 'win_installer': self.copy_file(self.installer),
@@ -204,4 +204,4 @@ class EC2Test(CloudTest):
             }
 
         )
-        self._test_instance('ec2-win2016-test', debug=True)
+        self._test_instance(self.OVERRIDE_PROFILE, debug=True)

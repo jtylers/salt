@@ -148,7 +148,7 @@ class ProfitBricksTest(CloudTest):
         Test creating an instance on ProfitBricks
         '''
         # check if instance with salt installed returned
-        ret_str = self.run_cloud('-p profitbricks-test {0}'.format(self.instance_name), timeout=TIMEOUT)
+        ret_str = self.run_cloud('-p {0} {1}'.format(self.PROFILE, self.instance_name), timeout=TIMEOUT)
         self.assertInstanceExists(ret_str)
 
         self.assertDestroyInstance(timeout=TIMEOUT)
