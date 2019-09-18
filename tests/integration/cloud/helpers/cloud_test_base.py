@@ -212,9 +212,9 @@ class CloudTest(ShellCase):
         # check if appropriate cloud provider and profile files are present
         if self.profile_str + ':' not in self.providers:
             self.skipTest(
-                'Configuration file for {0} was not found. Check {0}.conf files '
-                'in tests/integration/files/conf/cloud.*.d/ to run these tests.'
-                    .format(self.PROVIDER)
+                'Configuration file \'{0}\' was not found in providers. Check {1}.conf files '
+                'in tests/integration/files/conf/cloud.*.d/ to run these tests.  {2}'
+                    .format(self.profile_str, self.PROVIDER, self.providers)
             )
 
         missing_conf_item = []
