@@ -137,7 +137,8 @@ class DigitalOceanTest(CloudTest):
             image=IMAGE_NAME,
             location='sfo1',
             size='512mb',
-            vm_size='512mb'
+            vm_size='512mb',
+            profile=self.config,
         )
 
         self.assertTrue(ret_val, 'Error in {} creation, no return value from create()'.format(self.instance_name))
