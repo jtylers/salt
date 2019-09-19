@@ -39,14 +39,14 @@ class VultrTest(CloudTest):
         '''
         Tests the return of running the --list-locations command for Vultr
         '''
-        locations = {l.strip(':- ') for l in self.run_cloud('--list-locations {0}'.format(self.PROVIDER)) if l}
+        locations = {l.strip(':- ') for l in self.run_cloud('--list-locations {0}'.format(self.PROVIDER)) if l.strip(':- ')}
         expected_locations = {
             'Amsterdam',
             'Atlanta',
             'Chicago',
             'Dallas',
             'Frankfurt',
-            'London'
+            'London',
             'Los Angeles',
             'Miami',
             'New Jersey',
