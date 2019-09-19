@@ -19,6 +19,8 @@ from salt.ext.six.moves import range
 import salt.cloud
 import salt.utils.stringutils
 
+log = logging.getLogger(__name__)
+
 
 class DigitalOceanTest(CloudTest):
     '''
@@ -138,7 +140,7 @@ class DigitalOceanTest(CloudTest):
             location='sfo1',
             size='512mb',
             vm_size='512mb',
-            profile=self.config,
+            profile=self.config_path,
         )
 
         self.assertTrue(ret_val, 'Error in {} creation, no return value from create()'.format(self.instance_name))
