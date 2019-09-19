@@ -19,8 +19,6 @@ from salt.ext.six.moves import range
 import salt.cloud
 import salt.utils.stringutils
 
-log = logging.getLogger(__name__)
-
 
 class DigitalOceanTest(CloudTest):
     '''
