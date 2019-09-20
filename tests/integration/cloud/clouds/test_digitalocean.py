@@ -122,7 +122,7 @@ class DigitalOceanTest(CloudTest):
         This test was created as a regression check against Issue #41971.
         '''
         IMAGE_NAME = '18.04.3 (LTS) x64'
-        LOCATION = 'sf02'
+        LOCATION = 'sfo2'
         images = self.run_cloud('--list-images {0}'.format(self.profile_str))
         if not any(IMAGE_NAME == i.strip(': ') for i in images):
             self.skipTest('Image \'{1}\' was not found in image search.  Is the {0} provider '
