@@ -163,7 +163,7 @@ class CloudTest(ShellCase):
     def provider_config_path(self):
         return os.path.join(self.config_dir, 'cloud.providers.d', self.PROVIDER + '.conf')
 
-        @property
+    @property
     def provider_config(self):
         if not hasattr(self, '_provider_config'):
             self._provider_config = cloud_providers_config(self.provider_config_path)
