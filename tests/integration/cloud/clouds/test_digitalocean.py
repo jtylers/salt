@@ -121,9 +121,8 @@ class DigitalOceanTest(CloudTest):
 
         This test was created as a regression check against Issue #41971.
         '''
-        IMAGE_NAME = '14.04.5 x64'
-        config_file = os.path.join(RUNTIME_VARS.TMP_CONF_CLOUD_PROVIDER_INCLUDES, 'digitalocean.conf')
-        cloud_client = salt.cloud.CloudClient(config_file)
+        IMAGE_NAME = '18.04.3 (LTS) x64'
+        cloud_client = salt.cloud.CloudClient(self.provider_config_path)
 
         images = self.run_cloud('--list-images {0}'.format(self.profile_str))
         if IMAGE_NAME not in [i.strip(': ') for i in images]:
