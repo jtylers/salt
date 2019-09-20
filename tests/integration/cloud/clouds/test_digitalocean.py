@@ -135,7 +135,7 @@ class DigitalOceanTest(CloudTest):
                                                                                                      locations))
 
         # Create the VM using salt.cloud.CloudClient.create() instead of calling salt-cloud
-        cloud_client = salt.cloud.CloudClient(opts=self.provider_config)
+        cloud_client = salt.cloud.CloudClient(opts=self.config)
         ret_val = cloud_client.create(
             provider=self.profile_str,
             names=[self.instance_name],
