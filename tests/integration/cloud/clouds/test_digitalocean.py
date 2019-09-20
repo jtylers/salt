@@ -130,7 +130,9 @@ class DigitalOceanTest(CloudTest):
 
         locations = self.run_cloud('--list-locations {0}'.format(self.profile_str))
         if not any(LOCATION == l.strip(': ') for l in locations):
-            self.skipTest('Location \'{0}\' is not in the list of locations for \'{1}\''.format(LOCATION, self.PROVIDER))
+            self.skipTest('Location \'{0}\' is not in the list of locations for \'{1}\'\n{2}'.format(LOCATION,
+                                                                                                     self.PROVIDER,
+                                                                                                     locations))
 
         # Create the VM using salt.cloud.CloudClient.create() instead of calling salt-cloud
         cloud_client = salt.cloud.CloudClient(opts=self.provider_config)
