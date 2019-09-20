@@ -122,19 +122,23 @@ class DigitalOceanTest(CloudTest):
         This test was created as a regression check against Issue #41971.
         '''
         IMAGE_NAME = '18.04.3 (LTS) x64'
-        cloud_client = salt.cloud.CloudClient(self.provider_config_path)
-
+        LOCATION = 'sf02'
         images = self.run_cloud('--list-images {0}'.format(self.profile_str))
-        if IMAGE_NAME not in [i.strip(': ') for i in images]:
+        if not any(IMAGE_NAME == i.strip(': ') for i in images):
             self.skipTest('Image \'{1}\' was not found in image search.  Is the {0} provider '
                           'configured correctly for this test?'.format(self.PROVIDER, IMAGE_NAME))
 
+        locations = self.run_cloud('--list-locations {0}'.format(self.profile_str))
+        if not any(LOCATION == l.strip(': ') for l in locations):
+            self.skipTest('Location \'{0}\' is not in the list of locations for \'{1}\''.format(LOCATION, self.PROVIDER))
+
         # Create the VM using salt.cloud.CloudClient.create() instead of calling salt-cloud
+        cloud_client = salt.cloud.CloudClient(opts=self.provider_config)
         ret_val = cloud_client.create(
             provider=self.profile_str,
             names=[self.instance_name],
             image=IMAGE_NAME,
-            location='sfo1',
+            location=LOCATION,
             size='512mb',
             vm_size='512mb',
             profile=self.config_path,
