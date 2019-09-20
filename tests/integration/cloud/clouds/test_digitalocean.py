@@ -143,7 +143,6 @@ class DigitalOceanTest(CloudTest):
             location=LOCATION,
             size='512mb',
             vm_size='512mb',
-            profile=self.config_path,
         )
 
         self.assertTrue(ret_val, 'Error in {} creation, no return value from create()'.format(self.instance_name))
