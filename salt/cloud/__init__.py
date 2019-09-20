@@ -417,6 +417,7 @@ class CloudClient(object):
             # and PR #38166 for more information.
             vm_['profile'] = None
             vm_['provider'] = provider
+            log.debug('creating VM: {}'.format(vm_))
 
             ret[name] = salt.utils.data.simple_types_filter(
                 mapper.create(vm_))
