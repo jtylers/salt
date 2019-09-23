@@ -123,6 +123,7 @@ class DigitalOceanTest(CloudTest):
         '''
         IMAGE_NAME = '18.04.3 (LTS) x64'
         LOCATION = 'sfo2'
+        SIZE = '512mb'
         images = self.run_cloud('--list-images {0}'.format(self.profile_str))
         if not any(IMAGE_NAME == i.strip(': ') for i in images):
             self.skipTest('Image \'{1}\' was not found in image search.  Is the {0} provider '
@@ -135,20 +136,23 @@ class DigitalOceanTest(CloudTest):
                                                                                                      locations))
 
         # Create the VM using salt.cloud.CloudClient.create() instead of calling salt-cloud
-        cloud_client = salt.cloud.CloudClient(opts=self.config)
+        cloud_client = salt.cloud.CloudClient(opts=self.provider_config)
         ret_val = cloud_client.create(
             provider=self.profile_str,
             names=[self.instance_name],
             image=IMAGE_NAME,
             location=LOCATION,
-            size='512mb',
-            vm_size='512mb',
+            size=SIZE,
+            vm_size=SIZE,
         )
 
-        self.assertTrue(ret_val, 'Error in {} creation, no return value from create()'.format(self.instance_name))
-
         # Check that the VM was created correctly
-        self.assertInstanceExists(ret_val)
+        self.assertTrue(ret_val, 'Error in {} creation, no return value from create()'.format(self.instance_name))
+        self.assertIn(self.instance_name, ret_val.keys())
+        self.assertTrue(ret_val[self.instance_name].get('deployed'))
+        self.assertEquals(ret_val[self.instance_name].get('name'), self.instance_name)
+        self.assertEquals(ret_val[self.instance_name]['image']['name'], IMAGE_NAME)
+        self.assertEquals(ret_val[self.instance_name]['size'].get('slug'), IMAGE_NAME)
 
         # Clean up after ourselves and delete the VM
         deletion_ret = cloud_client.destroy(names=[self.instance_name])
