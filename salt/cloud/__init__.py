@@ -188,7 +188,7 @@ class CloudClient(object):
             self.opts = salt.config.cloud_config(path)
 
         # Check the cache-dir exists. If not, create it.
-        v_dirs = [self.opts['cachedir']]
+        v_dirs = [self.opts.get('cachedir')]
         salt.utils.verify.verify_env(v_dirs, salt.utils.user.get_user())
 
         if pillars:
