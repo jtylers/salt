@@ -11,6 +11,7 @@ import os
 from Crypto.PublicKey import RSA
 
 # Import Salt Testing Libs
+from salt.config import cloud_config
 from tests.integration.cloud.helpers.cloud_test_base import CloudTest, TIMEOUT
 from tests.support.runtests import RUNTIME_VARS
 
@@ -135,8 +136,13 @@ class DigitalOceanTest(CloudTest):
                                                                                                      self.PROVIDER,
                                                                                                      locations))
 
+        # FIXME?  It works when passing a provider config to cloud_config instead of cloud_providers_config
+        # FIXME?  Passing self.config to opts doesn't work, and neither does self.providers_config
+        # FIXME?  CloudClient(opts=) wants the provider config created with cloud_config()
+        opts = cloud_config(self.provider_config_path)
+
         # Create the VM using salt.cloud.CloudClient.create() instead of calling salt-cloud
-        cloud_client = salt.cloud.CloudClient(opts=self.provider_config)
+        cloud_client = salt.cloud.CloudClient(opts=opts)
         ret_val = cloud_client.create(
             provider=self.profile_str,
             names=[self.instance_name],
