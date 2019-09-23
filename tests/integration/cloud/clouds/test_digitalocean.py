@@ -7,13 +7,12 @@ Integration tests for DigitalOcean APIv2
 from __future__ import absolute_import, print_function, unicode_literals
 import base64
 import hashlib
-import os
 from Crypto.PublicKey import RSA
 
 # Import Salt Testing Libs
 from salt.config import cloud_config
 from tests.integration.cloud.helpers.cloud_test_base import CloudTest, TIMEOUT
-from tests.support.runtests import RUNTIME_VARS
+from tests.support.unit import skipIf
 
 # Import Salt Libs
 from salt.ext.six.moves import range
@@ -112,6 +111,7 @@ class DigitalOceanTest(CloudTest):
 
         self.assertDestroyInstance(timeout=TIMEOUT)
 
+    @skipIf(True, 'WAR ROOM TEMPORARY SKIP')            # needs to be rewritten to allow for dnf on Fedora 30 and RHEL 8
     def test_cloud_client_create_and_delete(self):
         '''
         Tests that a VM is created successfully when calling salt.cloud.CloudClient.create(),
