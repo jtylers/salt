@@ -51,11 +51,12 @@ if salt.utils.platform.is_windows():
 elif salt.utils.platform.is_freebsd:
     _VERSION_SPEC_SUPPORTED = False
 elif pre_grains:
+    log.error('pre_grains_id: {}  pre_grains_like: {}'.format(pre_grains.id(), pre_grains.like()))
     if any(arch in pre_grains.like() for arch in ('arch', 'archlinux')):
         _WILDCARDS_SUPPORTED = True
     elif 'debian' in pre_grains.like():
         _WILDCARDS_SUPPORTED = True
-    elif 'rhel' in pre_grains.like():
+    elif 'redhat' in pre_grains.like():
         _PKG_TARGETS = ['units', 'zsh-html']
         _WILDCARDS_SUPPORTED = True
         if pre_grains.id() == 'centos':
@@ -70,9 +71,10 @@ elif pre_grains:
         elif pre_grains.major_version() == 7:
             _PKG_DOT_TARGETS = ['tomcat-el-2.2-api']
             _PKG_EPOCH_TARGETS = ['comps-extras']
-    elif pre_grains.id() in ('sles', 'opensuse'):
+    elif 'opensuse' in pre_grains.like():
         _PKG_TARGETS = ['figlet', 'htop']
-        _PKG_CAP_TARGETS = [('perl(ZNC)', 'znc-perl')]
+        if pre_grains.id() in ('sles', 'opensuse'):
+            _PKG_CAP_TARGETS = [('perl(ZNC)', 'znc-perl')]
 
 
 def runs_on(platforms=None, os_like=None, reason=''):
@@ -567,16 +569,17 @@ class PkgTest(ModuleCase, SaltReturnAssertsMixin):
         if pre_grains and 'redhat' in pre_grains.like():
             # If we're in the Red Hat family first we ensure that
             # the yum-plugin-versionlock package is installed
+            versionlock_pkg = 'yum-plugin-versionlock' if pre_grains.major_version() < 7 else 'yum-versionlock'
             ret = self.run_state(
                 'pkg.installed',
-                name='yum-plugin-versionlock',
+                name=versionlock_pkg,
                 refresh=False,
             )
             self.assertSaltTrueReturn(ret)
 
         target = _PKG_TARGETS[0]
 
-        # First we ensure that the package is installed
+        # First we ensure that the package is installedgg
         ret = self.run_state(
             'pkg.installed',
             name=target,
@@ -593,6 +596,7 @@ class PkgTest(ModuleCase, SaltReturnAssertsMixin):
         )
 
         # changes from pkg.hold for Red Hat family are different
+        target_changes = {}
         if pre_grains:
             if 'redhat' in pre_grains.like():
                 target_changes = {'new': 'hold', 'old': ''}
@@ -605,6 +609,8 @@ class PkgTest(ModuleCase, SaltReturnAssertsMixin):
             self.assertIn(tag, ret)
             self.assertIn('changes', ret[tag])
             self.assertIn(target, ret[tag]['changes'])
+            if not target_changes:
+                self.skipTest('Test needs to be configured for {}: {}'.format(pre_grains.id(), ret[tag]['changes'][target]))
             self.assertEqual(ret[tag]['changes'][target], target_changes)
         finally:
             # Clean up, unhold package and remove
