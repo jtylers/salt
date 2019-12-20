@@ -1092,7 +1092,7 @@ def requires_salt_state_modules(*names):
     '''
     Makes sure the passed salt state module is available. Skips the test if not
 
-    .. versionadded:: 0.5.2
+    .. versionadded:: 3000
     '''
 
     def _check_required_salt_state_modules(*required_salt_modules):
