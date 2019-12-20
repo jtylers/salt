@@ -12,6 +12,7 @@ from tests.support.helpers import (
     destructiveTest,
     requires_network,
     requires_salt_modules,
+    requires_salt_state_modules,
     requires_system_grains,
     skip_if_not_root)
 from tests.support.unit import skipIf
@@ -172,6 +173,7 @@ class PkgModuleTest(ModuleCase, SaltReturnAssertsMixin):
 
     @destructiveTest
     @requires_salt_modules('pkg.hold', 'pkg.unhold', 'pkg.install', 'pkg.version', 'pkg.remove')
+    @requires_salt_state_modules('pkg.installed')
     @requires_network()
     @requires_system_grains
     def test_hold_unhold(self, grains):
@@ -335,6 +337,7 @@ class PkgModuleTest(ModuleCase, SaltReturnAssertsMixin):
     @destructiveTest
     @skipIf(salt.utils.platform.is_darwin(), 'The jenkins user is equivalent to root on mac, causing the test to be unrunnable')
     @requires_salt_modules('pkg.remove', 'pkg.latest_version')
+    @requires_salt_state_modules('pkg.removed')
     @requires_system_grains
     def test_pkg_latest_version(self, grains):
         '''

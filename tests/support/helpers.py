@@ -106,6 +106,7 @@ def destructiveTest(caller):
                 self.skipTest('Destructive tests are disabled')
             if old_setup is not None:
                 old_setup(self, *args, **kwargs)
+
         caller.setUp = setUp
         return caller
 
@@ -115,6 +116,7 @@ def destructiveTest(caller):
         if os.environ.get('DESTRUCTIVE_TESTS', 'False').lower() == 'false':
             cls.skipTest('Destructive tests are disabled')
         return caller(cls)
+
     return wrap
 
 
@@ -145,6 +147,7 @@ def expensiveTest(caller):
                 self.skipTest('Expensive tests are disabled')
             if old_setup is not None:
                 old_setup(self, *args, **kwargs)
+
         caller.setUp = setUp
         return caller
 
@@ -154,6 +157,7 @@ def expensiveTest(caller):
         if os.environ.get('EXPENSIVE_TESTS', 'False').lower() == 'false':
             cls.skipTest('Expensive tests are disabled')
         return caller(cls)
+
     return wrap
 
 
@@ -215,7 +219,7 @@ def flaky(caller=None, condition=True, attempts=4):
                     six.reraise(*exc_info)
                 if not isinstance(exc, AssertionError) and log.isEnabledFor(logging.DEBUG):
                     log.exception(exc, exc_info=exc_info)
-                if attempt >= attempts -1:
+                if attempt >= attempts - 1:
                     # We won't try to run tearDown once the attempts are exhausted
                     # because the regular test runner will do that for us
                     six.reraise(*exc_info)
@@ -230,6 +234,7 @@ def flaky(caller=None, condition=True, attempts=4):
                 )
                 time.sleep(backoff_time)
         return cls
+
     return wrap
 
 
@@ -254,6 +259,7 @@ def requires_sshd_server(caller):
                 self.skipTest('SSH tests are disabled')
             if old_setup is not None:
                 old_setup(self, *args, **kwargs)
+
         caller.setUp = setUp
         return caller
 
@@ -263,6 +269,7 @@ def requires_sshd_server(caller):
         if os.environ.get('SSH_DAEMON_RUNNING', 'False').lower() == 'false':
             cls.skipTest('SSH tests are disabled')
         return caller(cls)
+
     return wrap
 
 
@@ -342,6 +349,7 @@ class TstSuiteLoggingHandler(object):
             handler.messages    # here are the emitted log messages
 
     '''
+
     def __init__(self, level=0, format='%(levelname)s:%(message)s'):
         self.level = level
         self.format = format
@@ -456,6 +464,7 @@ class ForceImportErrorOn(object):
     ImportError: Forced ImportError raised for 'os.path'
     >>>
     '''
+
     def __init__(self, *module_names):
         self.__module_names = {}
         for entry in module_names:
@@ -529,6 +538,7 @@ class MockWraps(object):
     >>>
 
     '''
+
     def __init__(self, original, expected_failures, side_effect):
         self.__original = original
         self.__expected_failures = expected_failures
@@ -551,6 +561,7 @@ def requires_network(only_local_network=False):
     Simple decorator which is supposed to skip a test case in case there's no
     network connection to the internet.
     '''
+
     def decorator(func):
         @functools.wraps(func)
         def wrapper(cls):
@@ -614,7 +625,9 @@ def requires_network(only_local_network=False):
                 finally:
                     sock.close()
             return func(cls)
+
         return wrapper
+
     return decorator
 
 
@@ -678,7 +691,7 @@ def with_system_user(username, on_existing='delete', delete=True, password=None,
                         cls.skipTest(
                             'A user named {0!r} already existed on the '
                             'system and re-creating it was not possible'
-                            .format(username)
+                                .format(username)
                         )
                     log.debug(
                         'Second time creating system user {0!r}'.format(
@@ -690,7 +703,7 @@ def with_system_user(username, on_existing='delete', delete=True, password=None,
                         cls.skipTest(
                             'A user named {0!r} already existed, was deleted '
                             'as requested, but re-creating it was not possible'
-                            .format(username)
+                                .format(username)
                         )
 
             failure = None
@@ -727,7 +740,9 @@ def with_system_user(username, on_existing='delete', delete=True, password=None,
                 if failure is not None:
                     # If an exception was thrown, raise it
                     six.reraise(failure[0], failure[1], failure[2])
+
         return wrap
+
     return decorator
 
 
@@ -782,7 +797,7 @@ def with_system_group(group, on_existing='delete', delete=True):
                         cls.skipTest(
                             'A group named {0!r} already existed on the '
                             'system and re-creating it was not possible'
-                            .format(group)
+                                .format(group)
                         )
                     log.debug(
                         'Second time creating system group {0!r}'.format(
@@ -794,7 +809,7 @@ def with_system_group(group, on_existing='delete', delete=True):
                         cls.skipTest(
                             'A group named {0!r} already existed, was deleted '
                             'as requested, but re-creating it was not possible'
-                            .format(group)
+                                .format(group)
                         )
 
             failure = None
@@ -829,7 +844,9 @@ def with_system_group(group, on_existing='delete', delete=True):
                 if failure is not None:
                     # If an exception was thrown, raise it
                     six.reraise(failure[0], failure[1], failure[2])
+
         return wrap
+
     return decorator
 
 
@@ -896,7 +913,7 @@ def with_system_user_and_group(username, group,
                         cls.skipTest(
                             'A user named {0!r} already existed on the '
                             'system and re-creating it was not possible'
-                            .format(username)
+                                .format(username)
                         )
                     log.debug(
                         'Second time creating system user {0!r}'.format(
@@ -908,7 +925,7 @@ def with_system_user_and_group(username, group,
                         cls.skipTest(
                             'A user named {0!r} already existed, was deleted '
                             'as requested, but re-creating it was not possible'
-                            .format(username)
+                                .format(username)
                         )
             if not create_group:
                 log.debug('Failed to create system group')
@@ -927,7 +944,7 @@ def with_system_user_and_group(username, group,
                         cls.skipTest(
                             'A group named {0!r} already existed on the '
                             'system and re-creating it was not possible'
-                            .format(group)
+                                .format(group)
                         )
                     log.debug(
                         'Second time creating system group {0!r}'.format(
@@ -939,7 +956,7 @@ def with_system_user_and_group(username, group,
                         cls.skipTest(
                             'A group named {0!r} already existed, was deleted '
                             'as requested, but re-creating it was not possible'
-                            .format(group)
+                                .format(group)
                         )
 
             failure = None
@@ -989,7 +1006,9 @@ def with_system_user_and_group(username, group,
                 if failure is not None:
                     # If an exception was thrown, raise it
                     six.reraise(failure[0], failure[1], failure[2])
+
         return wrap
+
     return decorator
 
 
@@ -1055,6 +1074,7 @@ def requires_system_grains(func):
     Function decorator which loads and passes the system's grains to the test
     case.
     '''
+
     @functools.wraps(func)
     def decorator(*args, **kwargs):
         if not hasattr(requires_system_grains, '__grains__'):
@@ -1064,6 +1084,69 @@ def requires_system_grains(func):
             requires_system_grains.__grains__ = salt.loader.grains(opts)
         kwargs['grains'] = requires_system_grains.__grains__
         return func(*args, **kwargs)
+
+    return decorator
+
+
+def requires_salt_state_modules(*names):
+    '''
+    Makes sure the passed salt state module is available. Skips the test if not
+
+    .. versionadded:: 0.5.2
+    '''
+
+    def _check_required_salt_state_modules(*required_salt_modules):
+        # Late import
+        from tests.support.sminion import create_sminion
+        required_salt_modules = set(required_salt_modules)
+        sminion = create_sminion(minion_id='runtests-internal-sminion')
+        available_modules = list(sminion.states)
+        not_available_modules = set()
+        try:
+            cached_not_available_modules = sminion.__not_availiable_modules__
+        except AttributeError:
+            cached_not_available_modules = sminion.__not_availiable_modules__ = set()
+
+        if cached_not_available_modules:
+            for not_available_module in cached_not_available_modules:
+                if not_available_module in required_salt_modules:
+                    not_available_modules.add(not_available_module)
+                    required_salt_modules.remove(not_available_module)
+
+        for required_module_name in required_salt_modules:
+            search_name = required_module_name
+            if '.' not in search_name:
+                search_name += '.*'
+            if not fnmatch.filter(available_modules, search_name):
+                not_available_modules.add(required_module_name)
+                cached_not_available_modules.add(required_module_name)
+
+        if not_available_modules:
+            if len(not_available_modules) == 1:
+                raise SkipTest('Salt module \'{}\' is not available'.format(*not_available_modules))
+            raise SkipTest('Salt modules not available: {}'.format(', '.join(not_available_modules)))
+
+    def decorator(caller):
+        if inspect.isclass(caller):
+            # We're decorating a class
+            old_setup = getattr(caller, 'setUp', None)
+
+            def setUp(self, *args, **kwargs):
+                _check_required_salt_state_modules(*names)
+                if old_setup is not None:
+                    old_setup(self, *args, **kwargs)
+
+            caller.setUp = setUp
+            return caller
+
+        # We're simply decorating functions
+        @functools.wraps(caller)
+        def wrapper(cls):
+            _check_required_salt_state_modules(*names)
+            return caller(cls)
+
+        return wrapper
+
     return decorator
 
 
@@ -1073,6 +1156,7 @@ def requires_salt_modules(*names):
 
     .. versionadded:: 0.5.2
     '''
+
     def _check_required_salt_modules(*required_salt_modules):
         # Late import
         from tests.support.sminion import create_sminion
@@ -1219,10 +1303,11 @@ def repeat(caller=None, condition=True, times=5):
     @functools.wraps(caller)
     def wrap(cls):
         result = None
-        for attempt in range(1, times+1):
+        for attempt in range(1, times + 1):
             log.info('%s test run %d of %s times', cls, attempt, times)
             caller(cls)
         return cls
+
     return wrap
 
 
@@ -1238,6 +1323,7 @@ def http_basic_auth(login_cb=lambda username, password: False):
         class AuthenticatedHandler(tornado.web.RequestHandler):
             pass
     '''
+
     def wrapper(handler_class):
         def wrap_execute(handler_execute):
             def check_auth(handler, kwargs):
@@ -1275,6 +1361,7 @@ def http_basic_auth(login_cb=lambda username, password: False):
 
         handler_class._execute = wrap_execute(handler_class._execute)
         return handler_class
+
     return wrapper
 
 
@@ -1311,6 +1398,7 @@ class Webserver(object):
         webserver.start()
         webserver.stop()
     '''
+
     def __init__(self,
                  root=None,
                  port=None,
@@ -1430,6 +1518,7 @@ class MirrorPostHandler(tornado.web.RequestHandler):
     '''
     Mirror a POST body back to the client
     '''
+
     def post(self, *args):  # pylint: disable=arguments-differ
         '''
         Handle the post
